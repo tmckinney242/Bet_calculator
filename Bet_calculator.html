@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>American Odds Bet Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+      flex-direction: column;
+    }
+    .calculator {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 300px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .output {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #28a745;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+
+<div class="calculator">
+  <h1>Bet Calculator</h1>
+  <div class="input-group">
+    <label for="stake">Stake Amount ($)</label>
+    <input type="number" id="stake" placeholder="Enter your stake amount" required>
+  </div>
+  <div class="input-group">
+    <label for="odds">American Odds</label>
+    <input type="number" id="odds" placeholder="Enter betting odds" required>
+  </div>
+  <button onclick="calculatePayout()">Calculate Payout</button>
+  <div class="output" id="payout"></div>
+</div>
+
+<div class="calculator">
+  <h1>Combined Odds Calculator</h1>
+  <div id="odds-inputs">
+    <div class="input-group">
+      <label for="odd1">Odd 1</label>
+      <input type="number" id="odd1" placeholder="Enter odds" required>
+    </div>
+  </div>
+  <button onclick="addOddsInput()">Add Another Odd</button>
+  <button onclick="calculateCombinedOdds()">Calculate Combined Odds</button>
+  <div class="output" id="combined-odds"></div>
+</div>
+
+<script>
+  function calculatePayout() {
+    const stake = parseFloat(document.getElementById('stake').value);
+    const odds = parseFloat(document.getElementById('odds').value);
+    let payout = 0;
+
+    if (odds > 0) {
+      payout = stake * (odds / 100) + stake;
+    } else if (odds < 0) {
+      payout = stake * (100 / Math.abs(odds)) + stake;
+    }
+
+    document.getElementById('payout').innerText = payout ? `Payout: $${payout.toFixed(2)}` : 'Please enter valid values';
+  }
+
+  let oddsInputCount = 1;
+  
+  function addOddsInput() {
+    if (oddsInputCount < 10) {
+      oddsInputCount++;
+      const oddsInputsDiv = document.getElementById('odds-inputs');
+      const newInputGroup = document.createElement('div');
+      newInputGroup.classList.add('input-group');
+      newInputGroup.innerHTML = `
+        <label for="odd${oddsInputCount}">Odd ${oddsInputCount}</label>
+        <input type="number" id="odd${oddsInputCount}" placeholder="Enter odds" required>
+      `;
+      oddsInputsDiv.appendChild(newInputGroup);
+    }
+  }
+
+  function calculateCombinedOdds() {
+    let combinedOddsDecimal = 1;
+
+    for (let i = 1; i <= oddsInputCount; i++) {
+      const odd = parseFloat(document.getElementById(`odd${i}`).value);
+      if (isNaN(odd)) {
+        document.getElementById('combined-odds').innerText = 'Please enter valid odds';
+        return;
+      }
+
+      if (odd > 0) {
+        combinedOddsDecimal *= (odd / 100) + 1;
+      } else if (odd < 0) {
+        combinedOddsDecimal *= (100 / Math.abs(odd)) + 1;
+      }
+    }
+
+    // Convert combined decimal odds to American odds, rounded to the nearest whole number
+    let combinedOddsAmerican;
+    if (combinedOddsDecimal >= 2) {
+      combinedOddsAmerican = Math.round((combinedOddsDecimal - 1) * 100);
+    } else {
+      combinedOddsAmerican = Math.round(-100 / (combinedOddsDecimal - 1));
+    }
+
+    document.getElementById('combined-odds').innerText = 
+      `Combined Odds: ${combinedOddsAmerican > 0 ? "+" : ""}${combinedOddsAmerican}`;
+  }
+</script>
+
+</body>
+</html>
